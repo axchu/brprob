@@ -1,11 +1,42 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Enter <\"stringToPad\", num0s>")
+	fmt.Println("Example: <\"area 59\", 4>")
+
+	for {
+		fmt.Print("> ")
+		text, _ := reader.ReadString('\n')
+		// convert CRLF to LF
+		text = strings.Replace(text, "\n", "", -1)
+		if text == "exit" {
+			fmt.Println("goodbye!")
+			break
+		}
+		input := strings.Split(text, "\",")
+		if len(input) != 2 {
+			fmt.Println("check formatting and try again")
+		} else {
+			inputString := strings.Replace(input[0], "\"", "", -1)
+			numChars, err := strconv.Atoi(strings.TrimSpace(input[1]))
+			if err != nil || numChars < 0 {
+				fmt.Println(err.Error())
+				fmt.Println("check number and try again")
+			} else {
+				out := replace(inputString, numChars)
+				fmt.Printf("ans: %s\n\n", out)
+			}
+		}
+	}
 
 }
 

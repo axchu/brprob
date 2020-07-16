@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestReplace(t *testing.T) {
@@ -29,7 +28,7 @@ func TestReplace(t *testing.T) {
 	}
 	for i, in := range inputs {
 		out := replace(in.in, in.numChars)
-		require.Equal(t, expected[i], out)
+		assert.Equal(t, expected[i], out)
 	}
 }
 
