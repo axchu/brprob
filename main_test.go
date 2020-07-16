@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +51,6 @@ func TestFindFirstNumber(t *testing.T) {
 	}
 	for i, in := range inputs {
 		found, out, indexStart := findFirstNumber(in)
-		//tprint("  found(%v), out(%v), indexStart(%d), expectedindexStart(%d)", found, out, indexStart, expected[i].indexStart)
 		assert.Equal(t, expected[i].found, found)
 		assert.Equal(t, expected[i].out, out)
 		assert.Equal(t, expected[i].indexStart, indexStart)
@@ -124,14 +122,5 @@ func TestIsNumber(t *testing.T) {
 	for i, in := range inputs {
 		actual := isNumber(in)
 		assert.Equal(t, expected[i], actual, "input(%d) %s failed", i, in)
-	}
-
-}
-
-func tprint(in string, args ...interface{}) {
-	if in == "\n" {
-		fmt.Println()
-	} else {
-		fmt.Printf("[test] "+in+"\n", args...)
 	}
 }
