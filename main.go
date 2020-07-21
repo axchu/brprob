@@ -14,6 +14,7 @@ func main() {
 	fmt.Println("Example: <\"area 59\", 4>")
 
 	for {
+
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 		// convert CRLF to LF
@@ -32,67 +33,132 @@ func main() {
 				fmt.Println(err.Error())
 				fmt.Println("check number and try again")
 			} else {
-				out := replace(inputString, numChars)
-				fmt.Printf("ans: %s\n\n", out)
+				out := replace([]rune(inputString), numChars)
+				fmt.Printf("ans: %v\n\n", string(out))
 			}
 		}
 	}
 
 }
 
-func replace(in string, numChars int) string {
-	found, numFound, indexStart := findFirstNumber(in)
-	if !found {
-		return in
-	}
-	paddedNum := pad(numFound, numChars)
-	pre := in[0:indexStart] + paddedNum
-	indexPost := indexStart + len(numFound)
-	post := replace(in[indexPost:len(in)], numChars)
-	return (pre + post)
+type IndexPointer struct {
+	index int
+	found bool
 }
 
-func findFirstNumber(in string) (found bool, out string, indexStart int) {
-	out = ""
-	indexStart = 0
-	found = false
-	for i, cLetter := range in {
-		letter := string(cLetter)
-		if isNumber(letter) {
-			out += letter
-			if found == false {
-				indexStart = i
-			}
-			found = true
-			if i+1 >= len(in) || !isNumber(string(in[i+1])) {
-				break
+func newIndexPointer(index int, found bool) (indexPointer *IndexPointer) {
+	indexPointer = new(IndexPointer)
+	indexPointer.index = index
+	indexPointer.found = found
+	return indexPointer
+}
+
+func (ip *IndexPointer) reset() {
+	ip.index = 0
+	ip.found = false
+}
+
+type PadPointer struct {
+	index int
+	pad   int
+}
+
+func getInfo(input []rune, numChars int) (size int, padPoints []*PadPointer) {
+	iStart := newIndexPointer(0, false)
+	iEnd := newIndexPointer(0, false)
+	padPoints = make([]*PadPointer, 0, len(input))
+	padPointsIndex := 0
+	numAdditionalSlots := 0
+
+	for i, in := range input {
+
+		if isNumber(in) && !iStart.found { // new num seq
+			iStart.index = i
+			iStart.found = true
+			iEnd.index = i
+		}
+
+		if iStart.found {
+			iEnd.index = i
+			if i+1 >= len(input) || !isNumber(input[i+1]) {
+				iEnd.found = true
 			}
 		}
+
+		if iEnd.found {
+			diff := iEnd.index - iStart.index + 1
+			if diff < numChars {
+				pad := numChars - diff
+
+				// record where to pad and how many
+				pp := new(PadPointer)
+				pp.index = iStart.index + numAdditionalSlots
+				pp.pad = pad
+				padPoints = append(padPoints, pp)
+				padPointsIndex++
+				numAdditionalSlots += pad
+			}
+			iStart.reset()
+			iEnd.reset()
+		}
+
 	}
-	return found, out, indexStart
+	return len(input) + numAdditionalSlots, padPoints
 }
 
-func pad(valueToPad string, numChars int) string {
-	padString := ""
-	if len(valueToPad) < numChars {
-		padString = makePadString(numChars - len(valueToPad))
+func replace(input []rune, numChars int) []rune {
+
+	// 1st pass, figure out how big the new slice needs to be
+	newSize, padPoints := getInfo(input, numChars)
+	if newSize == len(input) {
+		return input
 	}
-	return (padString + valueToPad)
+
+	// make the new output slice
+	output := make([]rune, newSize)
+
+	// 2nd pass, insert the pads
+	inIndex := 0
+	padPointsIndex := 0
+	padCounter := 0
+
+	for i := range output {
+		if padPointsIndex < len(padPoints) { // check if there are still points to pad
+			if padCounter > 0 { // already padding
+				output[i] = '0'
+				padCounter--
+				if padCounter == 0 {
+					padPointsIndex++
+				}
+			} else { // not already padding
+				if padPoints[padPointsIndex].index == i { // found an index to pad
+					padCounter = padPoints[padPointsIndex].pad
+					output[i] = '0'
+					padCounter--
+				} else { // did not find an index to pad
+					output[i] = input[inIndex] // do a straight copy
+					inIndex++
+				}
+			}
+		} else { // no more points to pad, just keep copying
+			output[i] = input[inIndex]
+			inIndex++
+		}
+	}
+	return output
 }
 
-func makePadString(numChars int) (out string) {
-	count := 0
-	out = ""
-	for count < numChars {
-		out += "0"
-		count++
-	}
-	return out
-}
-
-func isNumber(in string) bool {
-	if _, err := strconv.Atoi(in); err == nil {
+func isNumber(in rune) bool {
+	if _, err := strconv.Atoi(string(in)); err == nil {
 		return true
 	}
 	return false
 }
+
+// func dprint(in string, args ...interface{}) {
+// 	if in == "\n" {
+// 		fmt.Println()
+// 	} else {
+// 		fmt.Printf("[debug] "+in+"\n", args...)
+// 	}
+// }

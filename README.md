@@ -20,10 +20,10 @@ return "Area0059asdf0234"
 > go get github.com/axchu/brprob
 > go run main.go
 ```
-At the prompt, follow the instructions. Make sure you put quotes around the string. Type *exit* to exit.
+At the prompt, follow the instructions. Make sure you put double quotes around the string. Type *exit* to exit.
 
 #### Time Complexity
-Let *T(n)* denote the num of elementary operations that *replace* runs. *T(1)* performs a fixed number of operations. If n > 1, the function will make a recursive call which will perform at most T(n-1) operations, and so on. This is *O(n)* complexity.
+The first pass goes once through the input, the 2nd pass goes through the output once, building that output. There are only 2 passes, so the complexity is *O(n)*.
 
 #### Space Complexity
-Each function call of *replace* takes *O(n)* space. If the maximum depth of the recursion tree is *m* then the space complexity of the recursive function is *O(mn)*.
+The input has *n* slots, padPoints to record the padding has at most *len(input)* slots, and the output buffer has *x + n* slots where *x* is the number of additional 0's added to pad. At most *x* can be *(numChars - 1)(n / 2)* so the complexity is still linear *O(n)*. (Note: this does not include the string parsing done for i/o in the main function.)
